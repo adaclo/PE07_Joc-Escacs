@@ -44,7 +44,37 @@ public class PE07_AcarretaAdrian {
     public void initializeBoard(char[][] board) {
         for (int f=0;f<board.length;f++) {
             for (int c=0;c<board.length;c++) {
-                board[f][c] = '*';
+                if (f==0||f==1) { // BLACK PIECES
+                    if (f==1) { // Black Pawns
+                        board[f][c] = 'p';
+                    } else if (f==0&&(c==0||c==7)) { // Black Towers
+                        board[f][c] = 't';
+                    } else if (f==0&&(c==1||c==6)) { // Black Horse
+                        board[f][c] = 'h';
+                    } else if (f==0&&(c==2||c==5)) { // Black Bishop
+                        board[f][c] = 'b';
+                    } else if (f==0&&c==3) { // Black Queen
+                        board[f][c] = 'q';
+                    } else if (f==0&&c==4) { // Black King
+                        board[f][c] = 'k';
+                    }
+                } else if (f==6||f==7) { // WHITE PIECES
+                    if (f==6) { // White Pawns
+                        board[f][c] = 'P';
+                    } else if (f==7&&(c==0||c==7)) { // White Towers
+                        board[f][c] = 'T';
+                    } else if (f==7&&(c==1||c==6)) { // White Horse
+                        board[f][c] = 'H';
+                    } else if (f==7&&(c==2||c==5)) { // White Bishop
+                        board[f][c] = 'B';
+                    } else if (f==7&&c==3) { // White Queen
+                        board[f][c] = 'Q';
+                    } else if (f==7&&c==4) { // White King
+                        board[f][c] = 'K';
+                    }
+                } else {
+                    board[f][c] = ' '; // NO PIECE
+                }
             }
         }
     }
