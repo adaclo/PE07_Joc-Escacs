@@ -1,5 +1,7 @@
 package Activitats.PE07;
 
+import java.time.Year;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PE07_AcarretaAdrian {
@@ -8,37 +10,64 @@ public class PE07_AcarretaAdrian {
         p.principal();
     }
 
+    // COLORS
+    final String RESET = "\u001B[0m";
+    final String RED = "\u001B[31m";
+    final String GREEN = "\u001B[32m";
+    final String YELLOW = "\u001B[33m";
+    final String BLUE = "\u001B[34m";
+
     public void principal() {
-        // COLORS
-        final String RESET = "\u001B[0m";
-        final String RED = "\u001B[31m";
-        final String GREEN = "\u001B[32m";
-        final String YELLOW = "\u001B[33m";
-        final String BLUE = "\u001B[34m";
         String r;
         Scanner s = new Scanner(System.in);
 
         Boolean validOpt = false;
         do {
-            System.out.println(YELLOW+"Would you like to start a new Chess Game? (Yes/No)"+RESET);
+            System.out.print(YELLOW+"\nWould you like to start a new Chess Game? (Y/N) "+RESET);
             r = s.next();
 
-            if (r.equalsIgnoreCase("yes")) {
-                startGame();
+            if (r.equalsIgnoreCase("y")) {
+                startGame(s);
                 validOpt=true;
-            } else if (r.equalsIgnoreCase("no")) {
+            } else if (r.equalsIgnoreCase("n")) {
                 System.out.println(RED+"\nExiting program..."+RESET);
                 validOpt=true;
             }
         } while (!validOpt);
     }
 
-    public void startGame() {
+    public void startGame(Scanner s) {
         char[][] board = new char[8][8];
         char[][] movingBoard = new char[8][8];
+        String[] players = new String[2];
+        ArrayList<String> movements = new ArrayList<String>();
+        ArrayList<String> deadPieces = new ArrayList<String>();
 
         initializeBoard(board);
+        choosePlayer(s, players);
         showBoard(board);
+    }
+
+    public void choosePlayer(Scanner s, String[] players) {
+        Boolean finished=false;
+        while (!finished) {
+            s.nextLine(); // Clean buffer
+            for (int p=0;p<players.length;p++) {
+                System.out.print(YELLOW+"\n(#) Please enter name of player ("+(p+1)+") "+RESET);
+                players[p]=s.nextLine();
+            }
+            Boolean validOpt=false;
+            do {
+                System.out.print(YELLOW+"\nAre you sure '"+players[0]+"'"+" and '"+players[1]+"'"+" will be the players? (Y/N) "+RESET);
+                String r = s.next();
+                if (r.equalsIgnoreCase("y")) {
+                    finished=true;
+                    validOpt=true;
+                } else if (r.equalsIgnoreCase("n")) {
+                    validOpt=true;
+                }
+            } while (!validOpt);
+        }
     }
 
     public void initializeBoard(char[][] board) {
