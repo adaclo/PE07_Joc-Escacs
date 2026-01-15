@@ -1,6 +1,5 @@
 package Activitats.PE07;
 
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -16,6 +15,8 @@ public class PE07_AcarretaAdrian {
     final String GREEN = "\u001B[32m";
     final String YELLOW = "\u001B[33m";
     final String BLUE = "\u001B[34m";
+    final String BOLD = "\u001B[1m";
+    final String BOLDoff = "\u001B[0m";
 
     public void principal() {
         String r;
@@ -42,10 +43,40 @@ public class PE07_AcarretaAdrian {
         String[] players = new String[2];
         ArrayList<String> movements = new ArrayList<String>();
         ArrayList<String> deadPieces = new ArrayList<String>();
+        Boolean finished=false;
 
         initializeBoard(board);
         choosePlayer(s, players);
+        randomOrder(players);
         showBoard(board);
+        do {
+            for (int p=0;p<players.length;p++) {
+                newTurn(p,players);
+            }
+        } while (!finished);
+    }
+
+    public void newTurn(int p, String[] players) {
+        
+        if (p==0) {
+            System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
+        } else if (p==1) {
+            System.out.printf("\nIt's turn of %s%s%s%s: ",RED,BOLD,players[p],RESET);
+        }
+        
+    }
+
+    public void randomOrder(String[] players) { // Método para elegir aleatoriamente los colors
+        // 0 == BLANCO
+        // 1 == NEGRO 
+        int randomNum = (int)(Math.random()*2);
+        String temp;
+        if (randomNum==1) { // Alterna los órdenes si cae en 1
+            temp = players[0];
+            players[0]=players[1];
+            players[1]=temp;
+        } // No hay else porque si cae en 0 ya está bien ordenado
+        System.out.printf("\n%s%s %s%splaying with %s%swhite%s %spieces\n%s%s%s %s%splaying with %s%sred%s %spieces%s",BOLD,players[0],RESET,YELLOW,RESET,BOLD,RESET,YELLOW,RED,BOLD,players[1],RESET,YELLOW,BOLD,RED,RESET,YELLOW,RESET);
     }
 
     public void choosePlayer(Scanner s, String[] players) {
@@ -116,7 +147,11 @@ public class PE07_AcarretaAdrian {
                 System.out.println();
             }
             for (int c=0;c<board[0].length;c++) {
-                System.out.print("| " + board[f][c] + " ");
+                if (Character.isLowerCase(board[f][c])) {
+                    System.out.print("| " + RED+board[f][c]+RESET + " ");
+                } else {
+                    System.out.print("| " + board[f][c] + " ");
+                }
                 if (c==board[0].length-1) {
                     System.out.print("|");
                 }
