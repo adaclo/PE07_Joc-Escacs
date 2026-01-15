@@ -56,11 +56,16 @@ public class PE07_AcarretaAdrian {
         } while (!finished);
     }
 
+    public int readPosition(Scanner s) {
+        int position=0;
+
+        return position;
+    }
+
     public void newTurn(int p, String[] players) {
-        
-        if (p==0) {
+        if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
-        } else if (p==1) {
+        } else if (p==1) { // SI es el jugador ROJO
             System.out.printf("\nIt's turn of %s%s%s%s: ",RED,BOLD,players[p],RESET);
         }
         
@@ -68,7 +73,7 @@ public class PE07_AcarretaAdrian {
 
     public void randomOrder(String[] players) { // Método para elegir aleatoriamente los colors
         // 0 == BLANCO
-        // 1 == NEGRO 
+        // 1 == ROJO 
         int randomNum = (int)(Math.random()*2);
         String temp;
         if (randomNum==1) { // Alterna los órdenes si cae en 1
@@ -104,18 +109,18 @@ public class PE07_AcarretaAdrian {
     public void initializeBoard(char[][] board) {
         for (int f=0;f<board.length;f++) {
             for (int c=0;c<board.length;c++) {
-                if (f==0||f==1) { // BLACK PIECES
-                    if (f==1) { // Black Pawns
+                if (f==0||f==1) { // RED PIECES
+                    if (f==1) { // Red Pawns
                         board[f][c] = 'p';
-                    } else if (f==0&&(c==0||c==7)) { // Black Towers
+                    } else if (f==0&&(c==0||c==7)) { // Red Towers
                         board[f][c] = 't';
-                    } else if (f==0&&(c==1||c==6)) { // Black Horse
+                    } else if (f==0&&(c==1||c==6)) { // Red Horse
                         board[f][c] = 'h';
-                    } else if (f==0&&(c==2||c==5)) { // Black Bishop
+                    } else if (f==0&&(c==2||c==5)) { // Red Bishop
                         board[f][c] = 'b';
-                    } else if (f==0&&c==3) { // Black Queen
+                    } else if (f==0&&c==3) { // Red Queen
                         board[f][c] = 'q';
-                    } else if (f==0&&c==4) { // Black King
+                    } else if (f==0&&c==4) { // Red King
                         board[f][c] = 'k';
                     }
                 } else if (f==6||f==7) { // WHITE PIECES
@@ -143,21 +148,28 @@ public class PE07_AcarretaAdrian {
         for (int f=0;f<board.length;f++) {
             if (f==0) {
                 System.out.println();
-                System.out.print("---------------------------------");
+                System.out.printf("  | %sA%s | %sB%s | %sC%s | %sD%s | %sE%s | %sF%s | %sG%s | %sH%s |  ",GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET);
+                System.out.print("\n------------------------------------");
                 System.out.println();
             }
             for (int c=0;c<board[0].length;c++) {
+                if (c==0) {
+                    System.out.print(GREEN+Math.abs(f-board[0].length)+RESET+" ");
+                }
                 if (Character.isLowerCase(board[f][c])) {
                     System.out.print("| " + RED+board[f][c]+RESET + " ");
                 } else {
                     System.out.print("| " + board[f][c] + " ");
                 }
                 if (c==board[0].length-1) {
-                    System.out.print("|");
+                    System.out.print("| "+GREEN+Math.abs(f-board[0].length)+RESET);
                 }
             }
             System.out.println();
-            System.out.print("---------------------------------");
+            System.out.print("------------------------------------");
+            if(f==7) {
+                System.out.printf("\n  | %sA%s | %sB%s | %sC%s | %sD%s | %sE%s | %sF%s | %sG%s | %sH%s |  ",GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET,GREEN,RESET);
+            }
             System.out.println();
         }
     }
