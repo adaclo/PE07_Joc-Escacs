@@ -21,6 +21,9 @@ public class PE07_AcarretaAdrian {
     public void principal() {
         String r;
         Scanner s = new Scanner(System.in);
+        int[] origin = new int[2];
+        int[] destination = new int[2];
+        readPosition(s, "\nPlease enter the position of the piece you wanna move: ");
 
         Boolean validOpt = false;
         do {
@@ -41,6 +44,7 @@ public class PE07_AcarretaAdrian {
         char[][] board = new char[8][8];
         char[][] movingBoard = new char[8][8];
         String[] players = new String[2];
+        
         ArrayList<String> movements = new ArrayList<String>();
         ArrayList<String> deadPieces = new ArrayList<String>();
         Boolean finished=false;
@@ -56,10 +60,30 @@ public class PE07_AcarretaAdrian {
         } while (!finished);
     }
 
-    public int readPosition(Scanner s) {
-        int position=0;
-
-        return position;
+    public void readPosition(Scanner s, String text) {
+        Boolean validOpt=false;
+        String temp;
+        while (!validOpt) {
+            System.out.printf(YELLOW+text+RESET);
+            temp = s.next();
+            System.out.println(temp + " " + temp.length());
+            if (temp.length()==2) {
+                try {
+                    char charPos = temp.charAt(0);
+                    char numPos = temp.charAt(1);
+                    if (Character.isLetter(charPos)) {
+                        charPos = Character.toLowerCase(charPos);
+                    }
+                    if ((charPos>= 'a' && charPos <= 'h')&&(numPos>='1' && numPos<='8')) {
+                        int posX = charPos - 'a';
+                        int posY = Character.getNumericValue(numPos)-1; // ES -1 POQUE LA ARRAY EMPIEZA EN 0
+                        validOpt=true;
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
     }
 
     public void newTurn(int p, String[] players) {
