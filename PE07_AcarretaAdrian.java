@@ -21,9 +21,7 @@ public class PE07_AcarretaAdrian {
     public void principal() {
         String r;
         Scanner s = new Scanner(System.in);
-        int[] origin = new int[2];
-        int[] destination = new int[2];
-        readPosition(s, "\nPlease enter the position of the piece you wanna move: ");
+        
 
         Boolean validOpt = false;
         do {
@@ -55,18 +53,18 @@ public class PE07_AcarretaAdrian {
         showBoard(board);
         do {
             for (int p=0;p<players.length;p++) {
-                newTurn(p,players);
+                newTurn(p,players,s,board);
             }
         } while (!finished);
     }
 
-    public void readPosition(Scanner s, String text) {
+    public int readPosition(int p, Scanner s, String text,int[] position) {
         Boolean validOpt=false;
         String temp;
+        int num=0;
         while (!validOpt) {
             System.out.printf(YELLOW+text+RESET);
             temp = s.next();
-            System.out.println(temp + " " + temp.length());
             if (temp.length()==2) {
                 try {
                     char charPos = temp.charAt(0);
@@ -76,23 +74,54 @@ public class PE07_AcarretaAdrian {
                     }
                     if ((charPos>= 'a' && charPos <= 'h')&&(numPos>='1' && numPos<='8')) {
                         int posX = charPos - 'a';
-                        int posY = Character.getNumericValue(numPos)-1; // ES -1 POQUE LA ARRAY EMPIEZA EN 0
+                        int posY = Character.getNumericValue(numPos); // ES -1 POQUE LA ARRAY EMPIEZA EN 0
+                        posY = Math.abs(posY-8);
                         validOpt=true;
+                        position[0]=posX;
+                        position[1]=posY;
                     }
                 } catch (Exception e) {
                     System.out.println(e);
                 }
             }
         }
+        return num;
     }
 
-    public void newTurn(int p, String[] players) {
+    public void newTurn(int p, String[] players, Scanner s,char[][]board) {
+        
         if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
         } else if (p==1) { // SI es el jugador ROJO
             System.out.printf("\nIt's turn of %s%s%s%s: ",RED,BOLD,players[p],RESET);
         }
+        int[] position = new int[2];
+        Boolean[] validMovement = new Boolean[2];
+        int[] movement = new int[4];
+        readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",position);
+        validOrigin(p,position,board,validMovement,movement);
+        readPosition(p,s, "\nPlease enter the position of the destionation: ",position);
+        validDestination(p,position,board,validMovement,movement);
+    }
+
+    public void validDestination(int p,int[] position,char[][]board,Boolean[]validMovement,int[]movement) {
         
+    }
+
+    public void validOrigin(int p, int[] origin, char[][]board, Boolean[] validMovement, int[] movement) {
+        int posX=origin[0];
+        int posY=origin[1];
+        if(p==0&&Character.isUpperCase(board[posY][posX])) { // Es el turno del blanco y selecciona una de sus piezas
+            validMovement[0]=true;
+            movement[0] = posY;
+        } else if (p==1&&Character.isLowerCase(board[posY][posX])) { // Es el turno del rojo y selecciona una de sus piezas
+            validMovement[0]=true;
+            movement[0] = posY;
+        } else if ((p==0&&Character.isLowerCase(board[posY][posX]))||(p==1&&Character.isUpperCase(board[posY][posX]))) {
+            System.out.println(RED+"(!) This is not your piece."+RESET);
+        } else {
+            System.out.println(RED+"(!) You didn't selected any piece."+RESET);
+        }
     }
 
     public void randomOrder(String[] players) { // Método para elegir aleatoriamente los colors
