@@ -96,27 +96,63 @@ public class PE07_AcarretaAdrian {
             System.out.printf("\nIt's turn of %s%s%s%s: ",RED,BOLD,players[p],RESET);
         }
         int[] position = new int[2];
-        Boolean[] validMovement = new Boolean[2];
+        Boolean[] validMovement = {false,false};
         int[] movement = new int[4];
-        readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",position);
-        validOrigin(p,position,board,validMovement,movement);
-        readPosition(p,s, "\nPlease enter the position of the destionation: ",position);
-        validDestination(p,position,board,validMovement,movement);
+        while (!validMovement[0]) {
+            readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",position);
+            validOrigin(p,position,board,validMovement,movement);
+        }
+        while (!validMovement[1]) {
+            readPosition(p,s, "\nPlease enter the position of the destionation: ",position);
+            validDestination(p,position,board,validMovement,movement);
+        }
     }
 
     public void validDestination(int p,int[] position,char[][]board,Boolean[]validMovement,int[]movement) {
+        int posX=movement[0];
+        int posY=movement[1];
+        char orgPiece = board[posY][posX];
+
+        orgPiece = Character.toLowerCase(orgPiece);
+
+        System.out.println(orgPiece);
+
+        switch (orgPiece) {
+            case 'p': // PAWNS
+                
+                break;
+            case 't': // TOWERS
+                
+                break;
+            case 'h': // HORSES
+                
+                break;
+            case 'b': // BISHOPS
+                
+                break;
+            case 'k': // KINGS
+                
+                break;
+            case 'q': // QUEENS
+                
+                break;
         
+            default:
+                break;
+        }
     }
 
-    public void validOrigin(int p, int[] origin, char[][]board, Boolean[] validMovement, int[] movement) {
-        int posX=origin[0];
-        int posY=origin[1];
+    public void validOrigin(int p, int[] position, char[][]board, Boolean[] validMovement, int[] movement) {
+        int posX=position[0];
+        int posY=position[1];
         if(p==0&&Character.isUpperCase(board[posY][posX])) { // Es el turno del blanco y selecciona una de sus piezas
             validMovement[0]=true;
-            movement[0] = posY;
+            movement[0] = posX;
+            movement[1] = posY;
         } else if (p==1&&Character.isLowerCase(board[posY][posX])) { // Es el turno del rojo y selecciona una de sus piezas
             validMovement[0]=true;
-            movement[0] = posY;
+            movement[0] = posX;
+            movement[1] = posY;
         } else if ((p==0&&Character.isLowerCase(board[posY][posX]))||(p==1&&Character.isUpperCase(board[posY][posX]))) {
             System.out.println(RED+"(!) This is not your piece."+RESET);
         } else {
