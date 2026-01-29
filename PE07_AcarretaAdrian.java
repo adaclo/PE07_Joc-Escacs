@@ -44,7 +44,7 @@ public class PE07_AcarretaAdrian {
         String[] players = new String[2];
         
         ArrayList<String> movements = new ArrayList<String>();
-        ArrayList<String> deadPieces = new ArrayList<String>();
+        ArrayList<Character> deadPieces = new ArrayList<Character>();
         Boolean finished=false;
         Boolean playAgain=false;
 
@@ -55,7 +55,7 @@ public class PE07_AcarretaAdrian {
         do {
             do {
                 for (int p=0;p<players.length;p++) {
-                    newTurn(p,players,s,board);
+                    newTurn(p,players,s,board,movements,deadPieces);
                 }
             } while (!finished);
             Boolean validOpt=false;
@@ -66,7 +66,7 @@ public class PE07_AcarretaAdrian {
         } while (playAgain);
     }
 
-    public void readPosition(int p, Scanner s, String text,int[] position,char o_d,Boolean[]validMovement) {
+    public void readPosition(int p, Scanner s, String text,int[] position,char o_d,Boolean[]validMovement,String[]readableMoves) {
         Boolean validOpt=false;
         String temp;
         while (!validOpt) {
@@ -93,9 +93,11 @@ public class PE07_AcarretaAdrian {
                             if(o_d=='o') {
                                 position[0]=posX;
                                 position[1]=posY;
+                                readableMoves[0]=temp;
                             } else if (o_d=='d') {
                                 position[2]=posX;
                                 position[3]=posY;
+                                readableMoves[1]=temp;
                             }
                         }
                     } catch (Exception e) {
@@ -106,7 +108,7 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void newTurn(int p, String[] players, Scanner s,char[][]board) {
+    public void newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces) {
         
         if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
@@ -115,24 +117,28 @@ public class PE07_AcarretaAdrian {
         }
         Boolean[] validMovement = {false,false};
         int[] movement = new int[4];
+        String[] readableMoves = new String[2];
         do {
             validMovement[0]=false;
             do {
                 validMovement[1]=false;
-                readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement);
+                readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
                 validOrigin(p,board,validMovement,movement);
             } while (!validMovement[0]);
             do {
-                readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement);
+                readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement,readableMoves);
                 if (validMovement[0]) {
-                    validDestination(p,board,validMovement,movement);
+                    validDestination(p,board,validMovement,movement,deadPieces);
                 }
             } while (!validMovement[1]);
         } while (!validMovement[0]);
+        for (int i=0;i<readableMoves.length;i++) {
+            movements.add(readableMoves[i]);
+        }
         showBoard(board);
     }
 
-    public void validDestination(int p,char[][]board,Boolean[]validMovement,int[]movement) {
+    public void validDestination(int p,char[][]board,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
         int posXorg=movement[0];
         int posYorg=movement[1];
         int posXdest=movement[2];
@@ -145,7 +151,7 @@ public class PE07_AcarretaAdrian {
 
         switch (orgPiece) {
             case 'p': // PAWNS
-                validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement);
+                validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 't': // TOWERS
                 
@@ -168,7 +174,7 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement) {
+    public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
 
         int startPos,move;
         System.out.printf("ORIGEN %d%d",orgX,orgY);
@@ -183,6 +189,9 @@ public class PE07_AcarretaAdrian {
         }
 
         char destField = board[dstY][dstX];
+        char midField = board[dstY-1][dstX];
+
+        // movimiento de 1
         if (orgX==dstX&& // Si va recto
             destField==' '&& // Si el destino esta vacio
             dstY==orgY+move // Si se mueve 1 casilla
@@ -191,6 +200,30 @@ public class PE07_AcarretaAdrian {
             board[orgY][orgX]=' ';
             validMovement[1]=true;
         }
+                // ME FALTAN LOS ERRORES
+        // movimiento de 2
+        if (orgX==dstX&& // Si va recto
+            destField==' '&& // Si el destino esta vacio
+            midField==' '&& // Si la casilla de en medio está vacia
+            orgY==startPos&& // Si está en la primera casilla
+            dstY==orgY+move+move // Si se mueve 2 casilla
+        ) {
+            board[dstY][dstX]=board[orgY][orgX];
+            board[orgY][orgX]=' ';
+            validMovement[1]=true;
+        }
+
+        // movimiento de comer
+        if ((orgX-1==dstX||orgX+1==dstX)&& // Si en diagonal 1 casilla
+            destField!=' '&& // Si el destino no esta vacio
+            dstY==orgY+move // Si se mueve 1 casilla
+        ){
+            deadPieces.add(destField);
+            board[dstY][dstX]=board[orgY][orgX];
+            board[orgY][orgX]=' ';
+            validMovement[1]=true;
+        }
+
     }
 
     public void validOrigin(int p, char[][]board, Boolean[] validMovement, int[] movement) {
