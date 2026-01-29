@@ -94,6 +94,7 @@ public class PE07_AcarretaAdrian {
                                 position[0]=posX;
                                 position[1]=posY;
                                 readableMoves[0]=temp;
+                                System.out.println(temp);
                             } else if (o_d=='d') {
                                 position[2]=posX;
                                 position[3]=posY;
@@ -154,7 +155,7 @@ public class PE07_AcarretaAdrian {
                 validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 't': // TOWERS
-                
+                validTowerMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'h': // HORSES
                 
@@ -174,6 +175,30 @@ public class PE07_AcarretaAdrian {
         }
     }
 
+    public void validTowerMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
+
+        System.out.printf("ORIGEN %d%d",orgX,orgY);
+        System.out.printf("DEST %d%d",dstX,dstY);
+
+        char destField = board[dstY][dstX];
+
+        // movimiento de comer
+        if ((orgX==dstX||orgY==dstY)&& // Si en diagonal 1 casilla
+            destField!=' ' // Si el destino no esta vacio
+            // FALTA QUE NO HAYA PIEZAS DE POR MEDIO
+        ){
+            if ((p==0 && Character.isLowerCase(destField))||p==1 && Character.isUpperCase(destField)) {
+                deadPieces.add(destField);
+                board[dstY][dstX]=board[orgY][orgX];
+                board[orgY][orgX]=' ';
+                validMovement[1]=true;
+            } else {
+                System.out.println(RED+"(!) You cannot eat your pieces.");
+            }
+        }
+        
+    }
+
     public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
 
         int startPos,move;
@@ -189,28 +214,9 @@ public class PE07_AcarretaAdrian {
         }
 
         char destField = board[dstY][dstX];
-        char midField = board[dstY-1][dstX];
-
-        // movimiento de 1
-        if (orgX==dstX&& // Si va recto
-            destField==' '&& // Si el destino esta vacio
-            dstY==orgY+move // Si se mueve 1 casilla
-        ){
-            board[dstY][dstX]=board[orgY][orgX];
-            board[orgY][orgX]=' ';
-            validMovement[1]=true;
-        }
-                // ME FALTAN LOS ERRORES
-        // movimiento de 2
-        if (orgX==dstX&& // Si va recto
-            destField==' '&& // Si el destino esta vacio
-            midField==' '&& // Si la casilla de en medio está vacia
-            orgY==startPos&& // Si está en la primera casilla
-            dstY==orgY+move+move // Si se mueve 2 casilla
-        ) {
-            board[dstY][dstX]=board[orgY][orgX];
-            board[orgY][orgX]=' ';
-            validMovement[1]=true;
+        char midField = ' ';
+        if(dstY!=0) {
+            midField = board[dstY-1][dstX];
         }
 
         // movimiento de comer
@@ -218,12 +224,46 @@ public class PE07_AcarretaAdrian {
             destField!=' '&& // Si el destino no esta vacio
             dstY==orgY+move // Si se mueve 1 casilla
         ){
-            deadPieces.add(destField);
-            board[dstY][dstX]=board[orgY][orgX];
-            board[orgY][orgX]=' ';
-            validMovement[1]=true;
+            if ((p==0 && Character.isLowerCase(destField))||p==1 && Character.isUpperCase(destField)) {
+                deadPieces.add(destField);
+                board[dstY][dstX]=board[orgY][orgX];
+                board[orgY][orgX]=' ';
+                validMovement[1]=true;
+            } else {
+                System.out.println(RED+"(!) You cannot eat your pieces.");
+            }
         }
 
+        if (orgX==dstX) {// Si va recto
+            if ((destField!=' '||midField!=' ')&&(dstY==orgY+move+move||dstY==orgY+move)) {
+                System.out.println(RED+"(!) You cant move into another piece."+RESET);
+            }
+            // movimiento de 2
+            if (
+                destField==' '&& // Si el destino esta vacio
+                midField==' '&& // Si la casilla de en medio está vacia
+                orgY==startPos&& // Si está en la primera casilla
+                dstY==orgY+move+move // Si se mueve 2 casilla
+            ) {
+                board[dstY][dstX]=board[orgY][orgX];
+                board[orgY][orgX]=' ';
+                validMovement[1]=true;
+            } else if (destField==' '&&midField==' '&&dstY==orgY+move+move) {
+                System.out.println(RED+"(!) You are not in the first position."+RESET);
+            }
+
+            // movimiento de 1
+            if(destField==' '&& // Si el destino esta vacio
+                dstY==orgY+move // Si se mueve 1 casilla
+            ){
+                board[dstY][dstX]=board[orgY][orgX];
+                board[orgY][orgX]=' ';
+                validMovement[1]=true;
+            }
+        } else {
+            System.out.println(RED+"(!) You can only move straight."+RESET);
+        }
+        
     }
 
     public void validOrigin(int p, char[][]board, Boolean[] validMovement, int[] movement) {
