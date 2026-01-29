@@ -46,46 +46,64 @@ public class PE07_AcarretaAdrian {
         ArrayList<String> movements = new ArrayList<String>();
         ArrayList<String> deadPieces = new ArrayList<String>();
         Boolean finished=false;
+        Boolean playAgain=false;
 
         initializeBoard(board);
         choosePlayer(s, players);
         randomOrder(players);
         showBoard(board);
         do {
-            for (int p=0;p<players.length;p++) {
-                newTurn(p,players,s,board);
+            do {
+                for (int p=0;p<players.length;p++) {
+                    newTurn(p,players,s,board);
+                }
+            } while (!finished);
+            Boolean validOpt=false;
+            while(!validOpt) {
+                System.out.print(YELLOW+"\nDo you wanna play again with same players? (Y/N) "+RESET);
+                String r = s.next();
             }
-        } while (!finished);
+        } while (playAgain);
     }
 
-    public int readPosition(int p, Scanner s, String text,int[] position) {
+    public void readPosition(int p, Scanner s, String text,int[] position,char o_d,Boolean[]validMovement) {
         Boolean validOpt=false;
         String temp;
-        int num=0;
         while (!validOpt) {
             System.out.printf(YELLOW+text+RESET);
             temp = s.next();
-            if (temp.length()==2) {
-                try {
-                    char charPos = temp.charAt(0);
-                    char numPos = temp.charAt(1);
-                    if (Character.isLetter(charPos)) {
-                        charPos = Character.toLowerCase(charPos);
+            if (o_d=='d'&&temp.equalsIgnoreCase("X")) {
+                validMovement[0]=false;
+                validMovement[1]=true;
+                validOpt=true;
+                System.out.println(GREEN+"You successfully unselected the first piece!"+RESET);
+            } else {
+                if (temp.length()==2) {
+                    try {
+                        char charPos = temp.charAt(0);
+                        char numPos = temp.charAt(1);
+                        if (Character.isLetter(charPos)) {
+                            charPos = Character.toLowerCase(charPos);
+                        }
+                        if ((charPos>= 'a' && charPos <= 'h')&&(numPos>='1' && numPos<='8')) {
+                            int posX = charPos - 'a';
+                            int posY = Character.getNumericValue(numPos); // ES -1 POQUE LA ARRAY EMPIEZA EN 0
+                            posY = Math.abs(posY-8);
+                            validOpt=true;
+                            if(o_d=='o') {
+                                position[0]=posX;
+                                position[1]=posY;
+                            } else if (o_d=='d') {
+                                position[2]=posX;
+                                position[3]=posY;
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println(e);
                     }
-                    if ((charPos>= 'a' && charPos <= 'h')&&(numPos>='1' && numPos<='8')) {
-                        int posX = charPos - 'a';
-                        int posY = Character.getNumericValue(numPos); // ES -1 POQUE LA ARRAY EMPIEZA EN 0
-                        posY = Math.abs(posY-8);
-                        validOpt=true;
-                        position[0]=posX;
-                        position[1]=posY;
-                    }
-                } catch (Exception e) {
-                    System.out.println(e);
                 }
             }
         }
-        return num;
     }
 
     public void newTurn(int p, String[] players, Scanner s,char[][]board) {
@@ -95,23 +113,31 @@ public class PE07_AcarretaAdrian {
         } else if (p==1) { // SI es el jugador ROJO
             System.out.printf("\nIt's turn of %s%s%s%s: ",RED,BOLD,players[p],RESET);
         }
-        int[] position = new int[2];
         Boolean[] validMovement = {false,false};
         int[] movement = new int[4];
-        while (!validMovement[0]) {
-            readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",position);
-            validOrigin(p,position,board,validMovement,movement);
-        }
-        while (!validMovement[1]) {
-            readPosition(p,s, "\nPlease enter the position of the destionation: ",position);
-            validDestination(p,position,board,validMovement,movement);
-        }
+        do {
+            validMovement[0]=false;
+            do {
+                validMovement[1]=false;
+                readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement);
+                validOrigin(p,board,validMovement,movement);
+            } while (!validMovement[0]);
+            do {
+                readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement);
+                if (validMovement[0]) {
+                    validDestination(p,board,validMovement,movement);
+                }
+            } while (!validMovement[1]);
+        } while (!validMovement[0]);
+        showBoard(board);
     }
 
-    public void validDestination(int p,int[] position,char[][]board,Boolean[]validMovement,int[]movement) {
-        int posX=movement[0];
-        int posY=movement[1];
-        char orgPiece = board[posY][posX];
+    public void validDestination(int p,char[][]board,Boolean[]validMovement,int[]movement) {
+        int posXorg=movement[0];
+        int posYorg=movement[1];
+        int posXdest=movement[2];
+        int posYdest=movement[3];
+        char orgPiece = board[posYorg][posXorg];
 
         orgPiece = Character.toLowerCase(orgPiece);
 
@@ -119,7 +145,7 @@ public class PE07_AcarretaAdrian {
 
         switch (orgPiece) {
             case 'p': // PAWNS
-                
+                validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement);
                 break;
             case 't': // TOWERS
                 
@@ -142,9 +168,34 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void validOrigin(int p, int[] position, char[][]board, Boolean[] validMovement, int[] movement) {
-        int posX=position[0];
-        int posY=position[1];
+    public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement) {
+
+        int startPos,move;
+        System.out.printf("ORIGEN %d%d",orgX,orgY);
+        System.out.printf("DEST %d%d",dstX,dstY);
+
+        if(p==0) {
+            startPos=6;
+            move=-1;
+        } else {
+            startPos=1;
+            move=1;
+        }
+
+        char destField = board[dstY][dstX];
+        if (orgX==dstX&& // Si va recto
+            destField==' '&& // Si el destino esta vacio
+            dstY==orgY+move // Si se mueve 1 casilla
+        ){
+            board[dstY][dstX]=board[orgY][orgX];
+            board[orgY][orgX]=' ';
+            validMovement[1]=true;
+        }
+    }
+
+    public void validOrigin(int p, char[][]board, Boolean[] validMovement, int[] movement) {
+        int posX=movement[0];
+        int posY=movement[1];
         if(p==0&&Character.isUpperCase(board[posY][posX])) { // Es el turno del blanco y selecciona una de sus piezas
             validMovement[0]=true;
             movement[0] = posX;
