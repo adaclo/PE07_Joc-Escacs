@@ -54,23 +54,36 @@ public class PE07_AcarretaAdrian {
         do {
             do {
                 for (int p=0;p<players.length;p++) {
-                    newTurn(p,players,s,board,movements,deadPieces);
+                    finished=newTurn(p,players,s,board,movements,deadPieces);
+                    if (finished){
+                        p=2;
+                    }
                 }
             } while (!finished);
             Boolean validOpt=false;
             while(!validOpt) {
                 System.out.print(YELLOW+"\nDo you wanna play again with same players? (Y/N) "+RESET);
                 String r = s.next();
+                if (r.equalsIgnoreCase("y")) {
+                    playAgain=true;
+                    validOpt=true;
+                } else if (r.equalsIgnoreCase("n")) {
+                    validOpt=true;
+                }
             }
         } while (playAgain);
     }
 
-    public void readPosition(int p, Scanner s, String text,int[] position,char o_d,Boolean[]validMovement,String[]readableMoves) {
+    public Boolean readPosition(int p, Scanner s, String text,int[] position,char o_d,Boolean[]validMovement,String[]readableMoves) {
         Boolean validOpt=false;
         String temp;
         while (!validOpt) {
             System.out.printf(YELLOW+text+RESET);
             temp = s.next();
+            if (temp.equalsIgnoreCase("quit")) {
+                System.out.println(GREEN+"You quit successfully!"+RESET);
+                return true;
+            }
             if (o_d=='d'&&temp.equalsIgnoreCase("X")) {
                 validMovement[0]=false;
                 validMovement[1]=true;
@@ -105,9 +118,10 @@ public class PE07_AcarretaAdrian {
                 }
             }
         }
+        return false;
     }
 
-    public void newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces) {
+    public Boolean newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces) {
         
         if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
@@ -122,7 +136,10 @@ public class PE07_AcarretaAdrian {
             validMovement[0]=false;
             do {
                 validMovement[1]=false;
-                readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
+                Boolean quit=readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
+                if (quit) {
+                    return true;
+                }
                 validOrigin(p,board,validMovement,movement);
             } while (!validMovement[0]);
             copyBoard(board,movingBoard);
@@ -141,6 +158,7 @@ public class PE07_AcarretaAdrian {
             movements.add(readableMoves[i]);
         }
         showBoard(board);
+        return false;
     }
 
     public void possibleMoves(int p,char[][]movingBoard,int[]movement) {
