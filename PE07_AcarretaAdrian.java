@@ -1,6 +1,5 @@
 package Activitats.PE07;
 
-import java.lang.foreign.GroupLayout;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -41,7 +40,6 @@ public class PE07_AcarretaAdrian {
 
     public void startGame(Scanner s) {
         char[][] board = new char[8][8];
-        char[][] movingBoard = new char[8][8];
         String[] players = new String[2];
         
         ArrayList<String> movements = new ArrayList<String>();
@@ -95,7 +93,6 @@ public class PE07_AcarretaAdrian {
                                 position[0]=posX;
                                 position[1]=posY;
                                 readableMoves[0]=temp;
-                                System.out.println(temp);
                             } else if (o_d=='d') {
                                 position[2]=posX;
                                 position[3]=posY;
@@ -120,6 +117,7 @@ public class PE07_AcarretaAdrian {
         Boolean[] validMovement = {false,false};
         int[] movement = new int[4];
         String[] readableMoves = new String[2];
+        char[][] movingBoard = new char[8][8];
         do {
             validMovement[0]=false;
             do {
@@ -127,6 +125,9 @@ public class PE07_AcarretaAdrian {
                 readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
                 validOrigin(p,board,validMovement,movement);
             } while (!validMovement[0]);
+            copyBoard(board,movingBoard);
+            possibleMoves(p, movingBoard, movement);
+            showBoard(movingBoard);
             do {
                 readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement,readableMoves);
                 if (validMovement[0]) {
@@ -142,6 +143,22 @@ public class PE07_AcarretaAdrian {
         showBoard(board);
     }
 
+    public void possibleMoves(int p,char[][]movingBoard,int[]movement) {
+        int x=movement[0];
+        int y=movement[1];
+
+        switch (Character.toLowerCase(movingBoard[y][x])) {
+            case 'p':
+                pawnMoves(p,movingBoard,movement);
+                break;
+            case 't':
+                towerMoves(p, movingBoard, movement);
+                break;
+            default:
+                break;
+        }
+    }
+
     public void validDestination(int p,char[][]board,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
         int posXorg=movement[0];
         int posYorg=movement[1];
@@ -151,7 +168,6 @@ public class PE07_AcarretaAdrian {
 
         orgPiece = Character.toLowerCase(orgPiece);
 
-        System.out.println(orgPiece);
 
         switch (orgPiece) {
             case 'p': // PAWNS
@@ -180,9 +196,6 @@ public class PE07_AcarretaAdrian {
 
     public void validTowerMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
 
-        System.out.printf("ORIGEN %d%d",orgX,orgY);
-        System.out.printf("DEST %d%d",dstX,dstY);
-
         char destField = board[dstY][dstX];
 
         if (orgX==dstX&&orgY==dstY) {
@@ -210,8 +223,6 @@ public class PE07_AcarretaAdrian {
     public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
 
         int startPos,move;
-        System.out.printf("ORIGEN %d%d",orgX,orgY);
-        System.out.printf("DEST %d%d",dstX,dstY);
 
         if(p==0) {
             startPos=6;
@@ -233,9 +244,7 @@ public class PE07_AcarretaAdrian {
             dstY==orgY+move // Si se mueve 1 casilla
         ){
             eatPiece(p,destField,orgX,orgY,dstX,dstY,board,validMovement,deadPieces);
-        }
-
-        if (orgX==dstX) {// Si va recto
+        } else if (orgX==dstX) {// Si va recto
             if ((destField!=' '||midField!=' ')&&(dstY==orgY+move+move||dstY==orgY+move)) {
                 System.out.println(RED+"(!) You cant move into another piece."+RESET);
             }
@@ -263,6 +272,110 @@ public class PE07_AcarretaAdrian {
             System.out.println(RED+"(!) You can only move straight."+RESET);
         }
         
+    }
+
+    public void copyBoard (char[][]board,char[][]mBoard) {
+        for (int i=0;i<board.length;i++) {
+            for (int j=0;j<board.length;j++) {
+                mBoard[i][j]=board[i][j];
+            }
+        }
+    }
+
+    public void towerMoves(int p, char[][] mBoard, int[] movement) {
+
+        int orgX = movement[0];
+        int orgY = movement[1];
+
+        int[][] directions = {
+            {1, 0},
+            {-1, 0},
+            {0, 1},
+            {0, -1}
+        };
+
+        for (int i = 0; i < directions.length; i++) {
+
+            int stepX = directions[i][0];
+            int stepY = directions[i][1];
+
+            int x = orgX + stepX;
+            int y = orgY + stepY;
+
+            boolean stop = false;
+
+            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
+
+                char field = mBoard[y][x];
+
+                if (field == ' ') {
+                    markField(mBoard,y,x);
+                }
+                else {
+
+                    if (
+                        (p == 0 && Character.isLowerCase(field)) ||
+                        (p == 1 && Character.isUpperCase(field))
+                    ) {
+                        markField(mBoard,y,x);
+                    }
+
+                    stop = true;
+                }
+
+                x += stepX;
+                y += stepY;
+            }
+        }
+    }
+
+    public void pawnMoves(int p,char[][]mBoard,int[]movement) {
+
+        int orgX=movement[0];
+        int orgY=movement[1];
+
+        int startPos,move;
+
+        if(p==0) {
+            startPos=6;
+            move=-1;
+        } else {
+            startPos=1;
+            move=1;
+        }
+
+        char eat1=' ';
+        char eat2=' ';
+        int pos1=0;
+        int pos2=0;
+
+        if (orgX!=7) {
+            pos1=1;
+            eat1=mBoard[orgY+move][orgX+1]; // COMER *
+        } 
+        if (orgX!=0) {
+            pos2=-1;
+            eat2=mBoard[orgY+move][orgX-1]; // COMER *
+        }
+
+                if (orgY==startPos) { // PRIMERA POSICION
+                    markField(mBoard,orgY+(move*2),orgX);
+                }
+                    markField(mBoard,orgY+move,orgX);
+                try {
+                    if ((mBoard[orgY+move][orgX+pos1]!=' '||mBoard[orgY+move][orgX+pos2]!=' ')) {
+                        if ((p==0 && Character.isLowerCase(eat1))||(p==1 && Character.isUpperCase(eat1))) {
+                            markField(mBoard, orgY+move, orgX+pos1);
+                        } else if ((p==0 && Character.isLowerCase(eat2))||(p==1 && Character.isUpperCase(eat2))) {
+                            markField(mBoard, orgY+move, orgX+pos2);
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {}
+        
+    }
+
+    public void markField(char[][]board,int i,int j) {
+        board[i][j]='*';    
     }
 
     public void movePiece(char[][]board,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement) {
@@ -293,8 +406,6 @@ public class PE07_AcarretaAdrian {
 
 
     public void eatPiece(int p, char destField, int orgX, int orgY, int dstX, int dstY, char[][]board, Boolean[]validMovement,ArrayList<Character>deadPieces) {
-        System.out.println(p);
-        System.out.println(destField);
         if ((p==0 && Character.isLowerCase(destField))||(p==1 && Character.isUpperCase(destField))) {
             deadPieces.add(destField);
             board[dstY][dstX]=board[orgY][orgX];
