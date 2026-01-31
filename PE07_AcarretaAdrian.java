@@ -41,7 +41,7 @@ public class PE07_AcarretaAdrian {
     public void startGame(Scanner s) {
         char[][] board = new char[8][8];
         String[] players = new String[2];
-        
+        int[] gamesWon = {0,0};
         ArrayList<String> movements = new ArrayList<String>();
         ArrayList<Character> deadPieces = new ArrayList<Character>();
         Boolean finished=false;
@@ -52,14 +52,45 @@ public class PE07_AcarretaAdrian {
         randomOrder(players);
         showBoard(board);
         do {
+            int p0=gamesWon[0]; // para comprobar si se le ha sumado una victoria
+            int winner;
             do {
                 for (int p=0;p<players.length;p++) {
-                    finished=newTurn(p,players,s,board,movements,deadPieces);
+                    finished=newTurn(p,players,s,board,movements,deadPieces,gamesWon);
                     if (finished){
-                        p=2;
+                        p=2; // parar for
                     }
                 }
             } while (!finished);
+            if(p0!=gamesWon[0]) { // descubrir quien es el ganador
+                winner=0;
+            } else {
+                winner=1;
+            }
+            if(winner==0) {
+                System.out.printf("\n%s%s%s%s has won the game!%s",BOLD,players[0],RESET,GREEN,RESET);
+            } else {
+                System.out.printf("\n%s%s%s%s%s has won the game!%s",RED,BOLD,players[1],RESET,GREEN,RESET);
+            }
+            System.out.print("\nThese are all the movements on the match:\n");
+            for (int m=0;m<movements.size();m++) {
+                if((m/2)%2==0) {
+                    System.out.print(BOLD+movements.get(m)+BOLDoff+", ");
+                } else {
+                    System.out.print(RED+BOLD+movements.get(m)+BOLDoff+RESET+", ");
+                }
+            }
+            if (deadPieces.size()!=0) {
+                System.out.print("\nThese are all the dead pieces in the match:\n");
+                for (int p=0;p<deadPieces.size();p++) {
+                    if (Character.isUpperCase(deadPieces.get(p))) {
+                        System.out.print(BOLD+deadPieces.get(p)+BOLDoff+", ");
+                    } else {
+                        System.out.print(RED+BOLD+deadPieces.get(p)+BOLDoff+RESET+", ");
+                    }
+                }
+            }
+            System.out.println();
             Boolean validOpt=false;
             while(!validOpt) {
                 System.out.print(YELLOW+"\nDo you wanna play again with same players? (Y/N) "+RESET);
@@ -67,9 +98,27 @@ public class PE07_AcarretaAdrian {
                 if (r.equalsIgnoreCase("y")) {
                     playAgain=true;
                     validOpt=true;
+                    if (winner==1) {
+                        String temp=players[0];
+                        players[0]=players[1]; // cambio el jugador rojo (ganador) al blanco
+                        players[1]=temp;
+                        int tempInt=gamesWon[0]; // igual con las partidas ganadas
+                        gamesWon[0]=gamesWon[1];
+                        gamesWon[1]=tempInt;
+                    }
+                    finished=false;
+                    initializeBoard(board);
+                    movements.clear();
+                    deadPieces.clear();
+                    showBoard(board);
                 } else if (r.equalsIgnoreCase("n")) {
-                    validOpt=true;
+                    playAgain=false;
+                    System.out.println(GREEN+BOLD+"GAME STATS"+RESET);
+                    System.out.printf("\n%s%s%s has won a total of %s%s%s matches",BOLD,players[0],BOLDoff,BOLD,gamesWon[0],RESET);
+                    System.out.printf("\n%s%s%s%s has won a total of %s%s%s%s matches",RED,BOLD,players[1],RESET,RED,BOLD,gamesWon[1],RESET);
                 }
+                System.err.println();
+                validOpt=true;
             }
         } while (playAgain);
     }
@@ -121,7 +170,7 @@ public class PE07_AcarretaAdrian {
         return false;
     }
 
-    public Boolean newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces) {
+    public Boolean newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces,int[]gamesWon) {
         
         if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
@@ -138,6 +187,11 @@ public class PE07_AcarretaAdrian {
                 validMovement[1]=false;
                 Boolean quit=readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
                 if (quit) {
+                    if (p==0) {
+                        gamesWon[1]=+1;
+                    } else {
+                        gamesWon[0]=+1;
+                    }
                     return true;
                 }
                 validOrigin(p,board,validMovement,movement);
@@ -228,13 +282,15 @@ public class PE07_AcarretaAdrian {
 
                     eatPiece(p,destField,orgX,orgY,dstX,dstY,board,validMovement,deadPieces);
                 }
-            }
-            // movimiento normal
-            if ((orgX==dstX||orgY==dstY)&&pathIsClear(orgX, orgY, dstX, dstY, board)&&destField==' ') {
+            } else if ((orgX==dstX||orgY==dstY)&&
+            pathIsClear(orgX, orgY, dstX, dstY, board)&&
+            destField==' ') { // movimiento normal
                 movePiece(board, orgX, orgY, dstX, dstY, validMovement);
             } else if (orgX!=dstX||orgY!=dstY) {
                 System.out.println(RED+"(!) You cannot move there."+RESET);
             }
+            
+            
         }
     }
 
@@ -376,19 +432,21 @@ public class PE07_AcarretaAdrian {
             eat2=mBoard[orgY+move][orgX-1]; // COMER *
         }
 
-                if (orgY==startPos) { // PRIMERA POSICION
-                    markField(mBoard,orgY+(move*2),orgX);
+        if (orgY==startPos&&mBoard[orgY+(move*2)][orgX]==' ') { // PRIMERA POSICION
+            markField(mBoard,orgY+(move*2),orgX);
+            markField(mBoard,orgY+move,orgX);
+        } else if (mBoard[orgY+move][orgX]==' '){
+            markField(mBoard,orgY+move,orgX);
+        }
+        try {
+            if ((mBoard[orgY+move][orgX+pos1]!=' '||mBoard[orgY+move][orgX+pos2]!=' ')) {
+                if ((p==0 && Character.isLowerCase(eat1))||(p==1 && Character.isUpperCase(eat1))) {
+                    markField(mBoard, orgY+move, orgX+pos1);
+                } else if ((p==0 && Character.isLowerCase(eat2))||(p==1 && Character.isUpperCase(eat2))) {
+                    markField(mBoard, orgY+move, orgX+pos2);
                 }
-                    markField(mBoard,orgY+move,orgX);
-                try {
-                    if ((mBoard[orgY+move][orgX+pos1]!=' '||mBoard[orgY+move][orgX+pos2]!=' ')) {
-                        if ((p==0 && Character.isLowerCase(eat1))||(p==1 && Character.isUpperCase(eat1))) {
-                            markField(mBoard, orgY+move, orgX+pos1);
-                        } else if ((p==0 && Character.isLowerCase(eat2))||(p==1 && Character.isUpperCase(eat2))) {
-                            markField(mBoard, orgY+move, orgX+pos2);
-                        }
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {}
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {}
         
     }
 
