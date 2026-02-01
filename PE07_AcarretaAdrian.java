@@ -181,6 +181,15 @@ public class PE07_AcarretaAdrian {
         int[] movement = new int[4];
         String[] readableMoves = new String[2];
         char[][] movingBoard = new char[8][8];
+        if (!anyPossibleLegalMove(p,board)) {
+            if (p==0) {
+                gamesWon[1]+=1;
+            } else {
+                gamesWon[0]+=1;
+            }
+            System.out.println(RED+"\n(!) You are in checkmate..."+RESET);
+            return true;
+        } else {
         do {
             validMovement[0]=false;
             do {
@@ -197,7 +206,7 @@ public class PE07_AcarretaAdrian {
                 validOrigin(p,board,validMovement,movement);
             } while (!validMovement[0]);
             copyBoard(board,movingBoard);
-            possibleMoves(p, movingBoard, movement);
+            possibleMoves(p, movingBoard, movement,board);
             showBoard(movingBoard);
             do {
                 readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement,readableMoves);
@@ -212,10 +221,43 @@ public class PE07_AcarretaAdrian {
             movements.add(readableMoves[i]);
         }
         showBoard(board);
+        }
         return false;
     }
 
-    public boolean isKingInCheck(int p, char[][] board) {
+    public boolean anyPossibleLegalMove(int p, char[][] board) {
+
+        for (int f = 0; f < 8; f++) {
+            for (int c = 0; c < 8; c++) {
+
+                if ((p == 0 && Character.isUpperCase(board[f][c])) ||
+                    (p == 1 && Character.isLowerCase(board[f][c]))) {
+
+                    int[] movement = {c, f};
+                    char[][] mBoard = new char[8][8];
+                    copyBoard(board, mBoard);
+
+                    possibleMoves(p, mBoard, movement, board);
+
+                    for (int y = 0; y < 8; y++) {
+                        for (int x = 0; x < 8; x++) {
+
+                            if (mBoard[y][x] == '*') {
+
+                                if (isMoveLegal(p, board, c, f, x, y)) {
+                                    return true; // hay al menos 1 movimiento
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false; // no hay movimientos
+    }
+
+    public boolean isKingInCheck(int p, char[][]board) {
 
         char[][] attackBoard = new char[8][8];
         copyBoard(board, attackBoard);
@@ -225,12 +267,12 @@ public class PE07_AcarretaAdrian {
 
                 if (p == 0 && Character.isLowerCase(board[f][c])) { // si le toca al blanco
                     int[] movement = {c, f};
-                    possibleMoves(1, attackBoard, movement);
+                    possibleMoves(1, attackBoard, movement,board);
                 }
 
                 if (p == 1 && Character.isUpperCase(board[f][c])) { // si le toca al rojo
                     int[] movement = {c, f};
-                    possibleMoves(0, attackBoard, movement);
+                    possibleMoves(0, attackBoard, movement,board);
                 }
             }
         }
@@ -266,7 +308,7 @@ public class PE07_AcarretaAdrian {
         return !isKingInCheck(p, testBoard); // comprueba si sigo en jaque despues del movimiento
     }
 
-    public void possibleMoves(int p,char[][]movingBoard,int[]movement) {
+    public void possibleMoves(int p,char[][]movingBoard,int[]movement,char[][]board) {
         int orgX=movement[0];
         int orgY=movement[1];
 
@@ -275,19 +317,19 @@ public class PE07_AcarretaAdrian {
                 pawnMoves(p,movingBoard,movement);
                 break;
             case 't':
-                towerMoves(p, movingBoard, movement);
+                towerMoves(p, movingBoard, movement,board);
                 break;
             case 'h':
-                horseMoves(p, movingBoard, movement);
+                horseMoves(p, movingBoard, movement,board);
                 break;
             case 'b':
-                bishopMoves(p, movingBoard, movement);
+                bishopMoves(p, movingBoard, movement,board);
                 break;
             case 'q':
-                kingQueenMoves(p, movingBoard, movement);
+                kingQueenMoves(p, movingBoard, movement,board);
                 break;
             case 'k':
-                kingQueenMoves(p, movingBoard, movement);
+                kingQueenMoves(p, movingBoard, movement,board);
                 break;
             default:
                 break;
@@ -326,7 +368,7 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void horseMoves(int p, char[][] mBoard, int[] movement) {
+    public void horseMoves(int p, char[][] mBoard, int[] movement,char[][]board) {
         int[][] directions = {
             {2, 1},
             {-2, 1},
@@ -337,20 +379,20 @@ public class PE07_AcarretaAdrian {
             {-1, 2},
             {-1, -2}
         };
-        findFields(p, mBoard, movement, directions);
+        findFields(p, mBoard, movement, directions,board);
     }
 
-    public void bishopMoves(int p, char[][] mBoard, int[] movement) {
+    public void bishopMoves(int p, char[][] mBoard, int[] movement,char[][]board) {
         int[][] directions = {
             {1, 1},
             {-1, -1},
             {-1, 1},
             {1, -1}
         };
-        findFields(p, mBoard, movement, directions);
+        findFields(p, mBoard, movement, directions,board);
     }
 
-    public void kingQueenMoves(int p, char[][] mBoard, int[] movement) {
+    public void kingQueenMoves(int p, char[][] mBoard, int[] movement,char[][]board) {
         int[][] directions = {
             {1, 1},
             {-1, -1},
@@ -361,20 +403,20 @@ public class PE07_AcarretaAdrian {
             {0, 1},
             {0, -1}
         };
-        findFields(p, mBoard, movement, directions);
+        findFields(p, mBoard, movement, directions,board);
     }
 
-    public void towerMoves(int p, char[][] mBoard, int[] movement) {
+    public void towerMoves(int p, char[][] mBoard, int[] movement,char[][]board) {
         int[][] directions = {
             {1, 0},
             {-1, 0},
             {0, 1},
             {0, -1}
         };
-        findFields(p, mBoard, movement, directions);
+        findFields(p, mBoard, movement, directions,board);
     }
 
-    public void findFields(int p,char[][]mBoard,int[]movement,int[][]directions) {
+    public void findFields(int p,char[][]mBoard,int[]movement,int[][]directions,char[][]board) {
         int orgX = movement[0];
         int orgY = movement[1];
 
@@ -396,10 +438,8 @@ public class PE07_AcarretaAdrian {
                     markField(mBoard,y,x);
                 } else {
 
-                    if (
-                        (p == 0 && Character.isLowerCase(field)) ||
-                        (p == 1 && Character.isUpperCase(field))
-                    ) {
+                    if (((p == 0 && Character.isLowerCase(field))||
+                    (p == 1 && Character.isUpperCase(field)))) {
                         markField(mBoard,y,x);
                     }
 
