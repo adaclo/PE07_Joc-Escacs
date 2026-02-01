@@ -202,7 +202,7 @@ public class PE07_AcarretaAdrian {
             do {
                 readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement,readableMoves);
                 if (validMovement[0]) {
-                    validDestination(p,board,validMovement,movement,deadPieces);
+                    validDestination(p,board,movingBoard,validMovement,movement,deadPieces);
                 } else {
                     showBoard(board);
                 }
@@ -232,12 +232,15 @@ public class PE07_AcarretaAdrian {
             case 'b':
                 bishopMoves(p, movingBoard, movement);
                 break;
+            case 'q':
+                queenMoves(p, movingBoard, movement);
+                break;
             default:
                 break;
         }
     }
 
-    public void validDestination(int p,char[][]board,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
+    public void validDestination(int p,char[][]board,char[][]movingBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
         int posXorg=movement[0];
         int posYorg=movement[1];
         int posXdest=movement[2];
@@ -249,22 +252,26 @@ public class PE07_AcarretaAdrian {
 
         switch (orgPiece) {
             case 'p': // PAWNS
-                validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
+                //validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 't': // TOWERS
-                validTowerMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
+                //validTowerMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'h': // HORSES
-                validHorseMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
+                //validHorseMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'b': // BISHOPS
-                validBishopMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
+                //validBishopMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'k': // KINGS
-                
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
                 break;
             case 'q': // QUEENS
-                
+                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
                 break;
         
             default:
@@ -272,171 +279,20 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void validHorseMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
-
+    public void executeMovement(int p,char[][]board,char[][]mBoard,int orgX,int orgY,int dstX,int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
         char destField = board[dstY][dstX];
         
-        int[][] directions = {
-            {2, 1},
-            {-2, 1},
-            {2, -1},
-            {-2, -1},
-            {1, 2},
-            {1, -2},
-            {-1, 2},
-            {-1, -2}
-        };
-
-        int possibleMoves=0;
-
-        for (int i = 0; i < directions.length; i++) {
-
-            if((dstY==orgY+directions[i][0])&&(dstX==orgX+directions[i][1])) {
-                if(destField==' ') {
-                    possibleMoves+=1;
-                    movePiece(board, orgX, orgY, dstX, dstY, validMovement);
-                } else {
-                    possibleMoves+=1;
-                    eatPiece(p, destField, orgX, orgY, dstX, dstY, board, validMovement, deadPieces);
-                }
-            }
-        }
-        if (possibleMoves==0) {
-            System.out.println(RED+"(!) You cannot move there."+RESET);
-        }
-    }
-
-    public void validBishopMove(int p,char[][]board,int[]movement,int orgX,int orgY,int dstX,int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
-
-        char destField = board[dstY][dstX];
-
-        int[][] directions = {
-            {1, 1},
-            {-1, -1},
-            {-1, 1},
-            {1, -1}
-        };
-
-        int possibleMoves = 0;
-
-        for (int i = 0; i < directions.length; i++) {
-
-            int stepX = directions[i][0];
-            int stepY = directions[i][1];
-
-            int x = orgX + stepX;
-            int y = orgY + stepY;
-
-            boolean stop = false;
-
-            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
-
-                if (board[y][x] != ' ') { // si hay pieza bloquear
-
-                    if (x == dstX && y == dstY) { // si es el destino
-                        possibleMoves += 1;
+        for (int f=0;f<board.length;f++) {
+            for (int c=0;c<board[0].length;c++) {
+                if (mBoard[f][c]=='*'&&f==dstY&&c==dstX) {
+                    if(destField!=' ') {
                         eatPiece(p, destField, orgX, orgY, dstX, dstY, board, validMovement, deadPieces);
-                    }
-
-                    stop = true; // para si hay una pieza
-                } else {
-                    if (x == dstX && y == dstY) { // si es el destino y esta vacio
-                        possibleMoves += 1;
+                    } else {
                         movePiece(board, orgX, orgY, dstX, dstY, validMovement);
-                        stop = true;
                     }
                 }
-
-                x += stepX;
-                y += stepY;
             }
         }
-
-        if (possibleMoves == 0) {
-            System.out.println(RED + "(!) You cannot move there." + RESET);
-        }
-    }
-
-
-    public void validTowerMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
-
-        char destField = board[dstY][dstX];
-
-        if (orgX==dstX&&orgY==dstY) {
-            System.out.println(RED+"(!) You cannot move to the same position."+RESET);
-        } else {
-
-            // movimiento de comer
-            if ((orgX==dstX||orgY==dstY)&& // Si es recto (hor/ver)
-                destField!=' ' // Si el destino no esta vacio
-            ){
-                if(pathIsClear(orgX, orgY, dstX, dstY, board)) {
-                    eatPiece(p,destField,orgX,orgY,dstX,dstY,board,validMovement,deadPieces);
-                }
-            } else if ((orgX==dstX||orgY==dstY)&&
-            pathIsClear(orgX, orgY, dstX, dstY, board)&&
-            destField==' ') { // movimiento normal
-                movePiece(board, orgX, orgY, dstX, dstY, validMovement);
-            } else if (orgX!=dstX||orgY!=dstY) {
-                System.out.println(RED+"(!) You cannot move there."+RESET);
-            }
-            
-            
-        }
-    }
-
-    public void validPawnMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
-
-        int startPos,move;
-
-        if(p==0) {
-            startPos=6;
-            move=-1;
-        } else {
-            startPos=1;
-            move=1;
-        }
-
-        char destField = board[dstY][dstX];
-        char midField = ' ';
-        if(dstY!=0) {
-            midField = board[dstY-1][dstX];
-        }
-
-        // movimiento de comer
-        if ((orgX-1==dstX||orgX+1==dstX)&& // Si en diagonal 1 casilla
-            destField!=' '&& // Si el destino no esta vacio
-            dstY==orgY+move // Si se mueve 1 casilla
-        ){
-            eatPiece(p,destField,orgX,orgY,dstX,dstY,board,validMovement,deadPieces);
-        } else if (orgX==dstX) {// Si va recto
-            if ((destField!=' '||midField!=' ')&&(dstY==orgY+move+move||dstY==orgY+move)) {
-                System.out.println(RED+"(!) You cant move into another piece."+RESET);
-            }
-            // movimiento de 2
-            if (
-                destField==' '&& // Si el destino esta vacio
-                midField==' '&& // Si la casilla de en medio está vacia
-                orgY==startPos&& // Si está en la primera casilla
-                dstY==orgY+move+move // Si se mueve 2 casilla
-            ) {
-                board[dstY][dstX]=board[orgY][orgX];
-                board[orgY][orgX]=' ';
-                validMovement[1]=true;
-            } else if (destField==' '&&midField==' '&&dstY==orgY+move+move) {
-                System.out.println(RED+"(!) You are not in the first position."+RESET);
-            }
-
-            // movimiento de 1
-            if(destField==' '&& // Si el destino esta vacio
-                dstY==orgY+move // Si se mueve 1 casilla
-            ){
-                movePiece(board, orgX, orgY, dstX, dstY, validMovement);
-            }
-        } else {
-            System.out.println(RED+"(!) You can only move straight."+RESET);
-        }
-        
     }
 
     public void copyBoard (char[][]board,char[][]mBoard) {
@@ -448,10 +304,6 @@ public class PE07_AcarretaAdrian {
     }
 
     public void horseMoves(int p, char[][] mBoard, int[] movement) {
-
-        int orgX = movement[0];
-        int orgY = movement[1];
-
         int[][] directions = {
             {2, 1},
             {-2, 1},
@@ -462,50 +314,46 @@ public class PE07_AcarretaAdrian {
             {-1, 2},
             {-1, -2}
         };
-
-        for (int i = 0; i < directions.length; i++) {
-
-            int stepX = directions[i][0];
-            int stepY = directions[i][1];
-
-            int x = orgX + stepX;
-            int y = orgY + stepY;
-
-            boolean stop = false;
-
-            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
-
-                char field = mBoard[y][x];
-
-                if (field == ' ') {
-                    markField(mBoard,y,x);
-                }
-                else {
-
-                    if (
-                        (p == 0 && Character.isLowerCase(field)) ||
-                        (p == 1 && Character.isUpperCase(field))
-                    ) {
-                        markField(mBoard,y,x);
-                    }
-
-                    stop = true;
-                }
-            }
-        }
+        findFields(p, mBoard, movement, directions);
     }
 
     public void bishopMoves(int p, char[][] mBoard, int[] movement) {
-
-        int orgX = movement[0];
-        int orgY = movement[1];
-
         int[][] directions = {
             {1, 1},
             {-1, -1},
             {-1, 1},
             {1, -1}
         };
+        findFields(p, mBoard, movement, directions);
+    }
+
+    public void queenMoves(int p, char[][] mBoard, int[] movement) {
+        int[][] directions = {
+            {1, 1},
+            {-1, -1},
+            {-1, 1},
+            {1, -1},
+            {1, 0},
+            {-1, 0},
+            {0, 1},
+            {0, -1}
+        };
+        findFields(p, mBoard, movement, directions);
+    }
+
+    public void towerMoves(int p, char[][] mBoard, int[] movement) {
+        int[][] directions = {
+            {1, 0},
+            {-1, 0},
+            {0, 1},
+            {0, -1}
+        };
+        findFields(p, mBoard, movement, directions);
+    }
+
+    public void findFields(int p,char[][]mBoard,int[]movement,int[][]directions) {
+        int orgX = movement[0];
+        int orgY = movement[1];
 
         for (int i = 0; i < directions.length; i++) {
 
@@ -534,55 +382,10 @@ public class PE07_AcarretaAdrian {
 
                     stop = true;
                 }
-
-                x += stepX;
-                y += stepY;
-            }
-        }
-    }
-    public void towerMoves(int p, char[][] mBoard, int[] movement) {
-
-        int orgX = movement[0];
-        int orgY = movement[1];
-
-        int[][] directions = {
-            {1, 0},
-            {-1, 0},
-            {0, 1},
-            {0, -1}
-        };
-
-        for (int i = 0; i < directions.length; i++) {
-
-            int stepX = directions[i][0];
-            int stepY = directions[i][1];
-
-            int x = orgX + stepX;
-            int y = orgY + stepY;
-
-            boolean stop = false;
-
-            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
-
-                char field = mBoard[y][x];
-
-                if (field == ' ') {
-                    markField(mBoard,y,x);
+                if (Character.toLowerCase(mBoard[orgY][orgX])!='h') {
+                    x += stepX;
+                    y += stepY;
                 }
-                else {
-
-                    if (
-                        (p == 0 && Character.isLowerCase(field)) ||
-                        (p == 1 && Character.isUpperCase(field))
-                    ) {
-                        markField(mBoard,y,x);
-                    }
-
-                    stop = true;
-                }
-
-                x += stepX;
-                y += stepY;
             }
         }
     }
