@@ -216,10 +216,10 @@ public class PE07_AcarretaAdrian {
     }
 
     public void possibleMoves(int p,char[][]movingBoard,int[]movement) {
-        int x=movement[0];
-        int y=movement[1];
+        int orgX=movement[0];
+        int orgY=movement[1];
 
-        switch (Character.toLowerCase(movingBoard[y][x])) {
+        switch (Character.toLowerCase(movingBoard[orgY][orgX])) {
             case 'p':
                 pawnMoves(p,movingBoard,movement);
                 break;
@@ -233,53 +233,24 @@ public class PE07_AcarretaAdrian {
                 bishopMoves(p, movingBoard, movement);
                 break;
             case 'q':
-                queenMoves(p, movingBoard, movement);
+                kingQueenMoves(p, movingBoard, movement);
+                break;
+            case 'k':
+                kingQueenMoves(p, movingBoard, movement);
                 break;
             default:
                 break;
         }
     }
 
-    public void validDestination(int p,char[][]board,char[][]movingBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
-        int posXorg=movement[0];
-        int posYorg=movement[1];
-        int posXdest=movement[2];
-        int posYdest=movement[3];
-        char orgPiece = board[posYorg][posXorg];
+    public void validDestination(int p,char[][]board,char[][]mBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
+        int orgX=movement[0];
+        int orgY=movement[1];
+        int dstX=movement[2];
+        int dstY=movement[3];
+        char orgPiece = board[orgY][orgX];
 
         orgPiece = Character.toLowerCase(orgPiece);
-
-
-        switch (orgPiece) {
-            case 'p': // PAWNS
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                //validPawnMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
-                break;
-            case 't': // TOWERS
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                //validTowerMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
-                break;
-            case 'h': // HORSES
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                //validHorseMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
-                break;
-            case 'b': // BISHOPS
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                //validBishopMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
-                break;
-            case 'k': // KINGS
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                break;
-            case 'q': // QUEENS
-                executeMovement(p, board, movingBoard, posXorg, posYorg, posXdest, posYdest, validMovement, deadPieces);
-                break;
-        
-            default:
-                break;
-        }
-    }
-
-    public void executeMovement(int p,char[][]board,char[][]mBoard,int orgX,int orgY,int dstX,int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
         char destField = board[dstY][dstX];
         
         for (int f=0;f<board.length;f++) {
@@ -327,7 +298,7 @@ public class PE07_AcarretaAdrian {
         findFields(p, mBoard, movement, directions);
     }
 
-    public void queenMoves(int p, char[][] mBoard, int[] movement) {
+    public void kingQueenMoves(int p, char[][] mBoard, int[] movement) {
         int[][] directions = {
             {1, 1},
             {-1, -1},
@@ -382,7 +353,7 @@ public class PE07_AcarretaAdrian {
 
                     stop = true;
                 }
-                if (Character.toLowerCase(mBoard[orgY][orgX])!='h') {
+                if (Character.toLowerCase(mBoard[orgY][orgX])!='h'&&Character.toLowerCase(mBoard[orgY][orgX])!='k') {
                     x += stepX;
                     y += stepY;
                 }
