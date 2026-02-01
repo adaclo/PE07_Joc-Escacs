@@ -1,6 +1,7 @@
 package Activitats.PE07;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class PE07_AcarretaAdrian {
@@ -44,6 +45,7 @@ public class PE07_AcarretaAdrian {
         int[] gamesWon = {0,0};
         ArrayList<String> movements = new ArrayList<String>();
         ArrayList<Character> deadPieces = new ArrayList<Character>();
+        ArrayList<Character> promotedPieces = new ArrayList<Character>();
         Boolean finished=false;
         Boolean playAgain=false;
 
@@ -56,7 +58,7 @@ public class PE07_AcarretaAdrian {
             int winner;
             do {
                 for (int p=0;p<players.length;p++) {
-                    finished=newTurn(p,players,s,board,movements,deadPieces,gamesWon);
+                    finished=newTurn(p,players,s,board,movements,deadPieces,gamesWon,promotedPieces);
                     if (finished){
                         p=2; // parar for
                     }
@@ -87,6 +89,16 @@ public class PE07_AcarretaAdrian {
                         System.out.print(BOLD+deadPieces.get(p)+BOLDoff+", ");
                     } else {
                         System.out.print(RED+BOLD+deadPieces.get(p)+BOLDoff+RESET+", ");
+                    }
+                }
+            }
+            if (promotedPieces.size()!=0) {
+                System.out.print("\nThese are all the promoted pieces in the match:\n");
+                for (int p=0;p<promotedPieces.size();p++) {
+                    if (Character.isUpperCase(promotedPieces.get(p))) {
+                        System.out.print(BOLD+promotedPieces.get(p)+BOLDoff+", ");
+                    } else {
+                        System.out.print(RED+BOLD+promotedPieces.get(p)+BOLDoff+RESET+", ");
                     }
                 }
             }
@@ -170,7 +182,7 @@ public class PE07_AcarretaAdrian {
         return false;
     }
 
-    public Boolean newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces,int[]gamesWon) {
+    public Boolean newTurn(int p, String[] players, Scanner s,char[][]board,ArrayList<String> movements,ArrayList<Character> deadPieces,int[]gamesWon,ArrayList<Character>promotedPieces) {
         
         if (p==0) { // SI es el jugador BLANCO
             System.out.printf("\nIt's turn of %s%s%s: ",BOLD,players[p],RESET);
@@ -211,7 +223,7 @@ public class PE07_AcarretaAdrian {
             do {
                 readPosition(p,s, "\nPlease enter the position of the destionation ('X' to cancel first piece): ",movement,'d',validMovement,readableMoves);
                 if (validMovement[0]) {
-                    validDestination(p,board,movingBoard,validMovement,movement,deadPieces);
+                    validDestination(p,board,movingBoard,validMovement,movement,deadPieces,s,promotedPieces);
                 } else {
                     showBoard(board);
                 }
@@ -223,6 +235,60 @@ public class PE07_AcarretaAdrian {
         showBoard(board);
         }
         return false;
+    }
+
+    public void promotePawn(char[][]board,char piece,int dstX,int dstY,Scanner s,ArrayList<Character>promotedPieces) {
+        System.out.println();
+        System.out.println(GREEN+"(+) You can promote your pawn!"+RESET);
+        System.out.println(GREEN+"1. (Tower)"+RESET);
+        System.out.println(GREEN+"2. (Horse)"+RESET);
+        System.out.println(GREEN+"3. (Bishop)"+RESET);
+        System.out.println(GREEN+"4. (Queen)"+RESET);
+        System.out.print(GREEN+"\nChoose what piece do you wanna get: "+RESET);
+        Boolean validOpt=false;
+        while (!validOpt) {
+            try {
+                int opt = s.nextInt();
+                switch (opt) {
+                    case 1:
+                        changePiece(board, piece, dstX, dstY, 't',promotedPieces);
+                        validOpt=true;
+                        break;
+                    case 2:
+                        changePiece(board, piece, dstX, dstY, 'h',promotedPieces);
+                        validOpt=true;
+                        break;
+                    case 3:
+                        changePiece(board, piece, dstX, dstY, 'b',promotedPieces);
+                        validOpt=true;
+                        break;
+                    case 4:
+                        changePiece(board, piece, dstX, dstY, 'q',promotedPieces);
+                        validOpt=true;
+                        break;
+                
+                    default:
+                        System.out.println(RED+"(!) Please enter a valid option."+RESET);
+                        break;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println(RED+"(!) Please enter a number."+RESET);
+                s.nextLine();
+            }
+        }
+        
+    }
+
+    public void changePiece(char[][]board,char piece,int dstX,int dstY,char newPiece,ArrayList<Character>promotedPieces) {
+        if (Character.isUpperCase(piece)) { // si es blanca
+            newPiece=Character.toUpperCase(newPiece);
+            board[dstY][dstX]=newPiece;
+        } else { // si es roja
+            newPiece=Character.toLowerCase(newPiece);
+            board[dstY][dstX]=newPiece;
+        }
+        promotedPieces.add(newPiece);
+        System.out.println(GREEN+"(+) You successfully promoted your pawn to a "+newPiece+RESET);
     }
 
     public boolean anyPossibleLegalMove(int p, char[][] board) {
@@ -337,7 +403,7 @@ public class PE07_AcarretaAdrian {
         //showBoard(movingBoard);
     }
 
-    public void validDestination(int p,char[][]board,char[][]mBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
+    public void validDestination(int p,char[][]board,char[][]mBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces,Scanner s,ArrayList<Character>promotedPieces) {
         int orgX=movement[0];
         int orgY=movement[1];
         int dstX=movement[2];
@@ -351,9 +417,9 @@ public class PE07_AcarretaAdrian {
             for (int c=0;c<board[0].length;c++) {
                 if (mBoard[f][c]=='*'&&f==dstY&&c==dstX) {
                     if(destField!=' ') {
-                        eatPiece(p, destField, orgX, orgY, dstX, dstY, board, mBoard, validMovement, deadPieces);
+                        eatPiece(p, destField, orgX, orgY, dstX, dstY, board, mBoard, validMovement, deadPieces,s,promotedPieces);
                     } else {
-                        movePiece(p, board, mBoard, orgX, orgY, dstX, dstY, validMovement);
+                        movePiece(p, board, mBoard, orgX, orgY, dstX, dstY, validMovement,s,promotedPieces);
                     }
                 }
             }
@@ -453,62 +519,79 @@ public class PE07_AcarretaAdrian {
         }
     }
 
-    public void pawnMoves(int p,char[][]mBoard,int[]movement) {
+    public void pawnMoves(int p, char[][] mBoard, int[] movement) {
 
-        int orgX=movement[0];
-        int orgY=movement[1];
+        int orgX = movement[0];
+        int orgY = movement[1];
 
-        int startPos,move;
+        int move;
+        int startRow;
 
-        if(p==0) {
-            startPos=6;
-            move=-1;
-        } else {
-            startPos=1;
-            move=1;
+        if (p == 0) { // blancas
+            move = -1;
+            startRow = 6;
+        } else { // rojas
+            move = 1;
+            startRow = 1;
         }
 
-        char eat1=' ';
-        char eat2=' ';
-        int pos1=0;
-        int pos2=0;
+        int nextY = orgY + move;
 
-        if (orgX!=7) {
-            pos1=1;
-            eat1=mBoard[orgY+move][orgX+1]; // COMER *
-        } 
-        if (orgX!=0) {
-            pos2=-1;
-            eat2=mBoard[orgY+move][orgX-1]; // COMER *
-        }
+        if (nextY >= 0 && nextY < 8) {
 
-        if (orgY==startPos&&mBoard[orgY+(move*2)][orgX]==' ') { // PRIMERA POSICION
-            markField(mBoard,orgY+(move*2),orgX);
-            markField(mBoard,orgY+move,orgX);
-        } else if (mBoard[orgY+move][orgX]==' '){
-            markField(mBoard,orgY+move,orgX);
-        }
-        try {
-            if ((mBoard[orgY+move][orgX+pos1]!=' '||mBoard[orgY+move][orgX+pos2]!=' ')) {
-                if ((p==0 && Character.isLowerCase(eat1))||(p==1 && Character.isUpperCase(eat1))) {
-                    markField(mBoard, orgY+move, orgX+pos1);
-                } else if ((p==0 && Character.isLowerCase(eat2))||(p==1 && Character.isUpperCase(eat2))) {
-                    markField(mBoard, orgY+move, orgX+pos2);
+            if (mBoard[nextY][orgX] == ' ') {
+                markField(mBoard, nextY, orgX);
+
+                int doubleStepY = orgY + (move * 2);
+
+                if (orgY == startRow && // si es la primera casilla doble movimiento
+                    doubleStepY >= 0 && doubleStepY < 8 &&
+                    mBoard[doubleStepY][orgX] == ' ') {
+
+                    markField(mBoard, doubleStepY, orgX);
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-        
+
+           
+            if (orgX < 7) { // captura diagonal der
+                char target = mBoard[nextY][orgX + 1];
+
+                if ((p == 0 && Character.isLowerCase(target)) ||
+                    (p == 1 && Character.isUpperCase(target))) {
+
+                    markField(mBoard, nextY, orgX + 1);
+                }
+            }
+
+           
+            if (orgX > 0) { // captura diagonal izq
+                char target = mBoard[nextY][orgX - 1];
+
+                if ((p == 0 && Character.isLowerCase(target)) ||
+                    (p == 1 && Character.isUpperCase(target))) {
+
+                    markField(mBoard, nextY, orgX - 1);
+                }
+            }
+        }
     }
+
 
     public void markField(char[][]board,int i,int j) {
         board[i][j]='*';    
     }
 
-    public void movePiece(int p,char[][]board,char[][]movingBoard,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement) {
+    public void movePiece(int p,char[][]board,char[][]movingBoard,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement,Scanner s,ArrayList<Character>promotedPieces) {
         if (isMoveLegal(p, board, orgX, orgY, dstX, dstY)) {
+            char piece=board[orgY][orgX];
             board[dstY][dstX]=board[orgY][orgX];
             board[orgY][orgX]=' ';
             validMovement[1]=true;
+            if (piece=='p'&&dstY==7) {
+                promotePawn(board,piece,dstX,dstY,s,promotedPieces);
+            } else if (piece=='P'&&dstY==0) {
+                promotePawn(board,piece,dstX,dstY,s,promotedPieces);
+            }
         } else {
             System.out.println(RED+"(!) Your king is in check!"+RESET);
         }
@@ -535,13 +618,19 @@ public class PE07_AcarretaAdrian {
     }
 
 
-    public void eatPiece(int p, char destField, int orgX, int orgY, int dstX, int dstY, char[][]board,char[][]movingBoard, Boolean[]validMovement,ArrayList<Character>deadPieces) {
+    public void eatPiece(int p, char destField, int orgX, int orgY, int dstX, int dstY, char[][]board,char[][]movingBoard, Boolean[]validMovement,ArrayList<Character>deadPieces,Scanner s,ArrayList<Character>promotedPieces) {
         if ((p==0 && Character.isLowerCase(destField))||(p==1 && Character.isUpperCase(destField))) {
             if (isMoveLegal(p, board, orgX, orgY, dstX, dstY)) {
+                char piece=board[orgY][orgX];
                 deadPieces.add(destField);
                 board[dstY][dstX]=board[orgY][orgX];
                 board[orgY][orgX]=' ';
                 validMovement[1]=true;
+                if (piece=='p'&&dstY==7) {
+                    promotePawn(board,piece,dstX,dstY,s,promotedPieces);
+                } else if (piece=='P'&&dstY==0) {
+                    promotePawn(board,piece,dstX,dstY,s,promotedPieces);
+                }
             } else {
                 System.out.println(RED+"(!) Your king is in check!"+RESET);
             }
