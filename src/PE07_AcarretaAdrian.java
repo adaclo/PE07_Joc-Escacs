@@ -244,11 +244,15 @@ public class PE07_AcarretaAdrian {
         System.out.println(GREEN+"2. (Horse)"+RESET);
         System.out.println(GREEN+"3. (Bishop)"+RESET);
         System.out.println(GREEN+"4. (Queen)"+RESET);
+        System.out.println(GREEN+"5. Random"+RESET);
         System.out.print(GREEN+"\nChoose what piece do you wanna get: "+RESET);
         Boolean validOpt=false;
         while (!validOpt) {
             try {
                 int opt = s.nextInt();
+                if (opt==5) {
+                    opt=(int)(Math.random()*4)+1;
+                }
                 switch (opt) {
                     case 1:
                         changePiece(board, piece, dstX, dstY, 't',promotedPieces);
@@ -265,8 +269,7 @@ public class PE07_AcarretaAdrian {
                     case 4:
                         changePiece(board, piece, dstX, dstY, 'q',promotedPieces);
                         validOpt=true;
-                        break;
-                
+                        break;                
                     default:
                         System.out.println(RED+"(!) Please enter a valid option."+RESET);
                         break;
@@ -400,7 +403,6 @@ public class PE07_AcarretaAdrian {
             default:
                 break;
         }
-        //showBoard(movingBoard);
     }
 
     public void validDestination(int p,char[][]board,char[][]mBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces,Scanner s,ArrayList<Character>promotedPieces) {
@@ -486,6 +488,9 @@ public class PE07_AcarretaAdrian {
         int orgX = movement[0];
         int orgY = movement[1];
 
+        
+        
+
         for (int i = 0; i < directions.length; i++) {
 
             int stepX = directions[i][0];
@@ -499,6 +504,8 @@ public class PE07_AcarretaAdrian {
             while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
 
                 char field = mBoard[y][x];
+
+                castling(mBoard, p, orgX, orgY);
 
                 if (field == ' ') {
                     markField(mBoard,y,x);
@@ -517,6 +524,34 @@ public class PE07_AcarretaAdrian {
                 }
             }
         }
+    }
+
+    public void castling(char[][]mBoard,int p,int orgX,int orgY) {
+
+        int f=0;
+        if (p==0) {
+            f=7;
+        } else {
+            f=0;
+        }
+
+        char izqT = mBoard[f][0];
+        char izq1 = mBoard[f][1];
+        char izq2 = mBoard[f][2];
+        char izq3 = mBoard[f][3];
+        char king = mBoard[f][4];
+        char der1 = mBoard[f][5];
+        char der2 = mBoard[f][6];
+        char derT = mBoard[f][7];
+
+        if (Character.toLowerCase(mBoard[orgY][orgX])=='k') { // enroque
+            if (Character.toLowerCase(izqT)=='t'&&izq1==' '&&izq2==' '&&izq3==' '&&Character.toLowerCase(king)=='k') { // enroque largo
+                markField(mBoard, f, 2);
+            } else if (Character.toLowerCase(king)=='k'&&der1==' '&&der2==' '&&Character.toLowerCase(derT)=='t') { // enroque corto
+                markField(mBoard, f, 6);
+            }
+        }
+
     }
 
     public void pawnMoves(int p, char[][] mBoard, int[] movement) {
@@ -584,6 +619,22 @@ public class PE07_AcarretaAdrian {
     public void movePiece(int p,char[][]board,char[][]movingBoard,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement,Scanner s,ArrayList<Character>promotedPieces) {
         if (isMoveLegal(p, board, orgX, orgY, dstX, dstY)) {
             char piece=board[orgY][orgX];
+            if (Character.toLowerCase(piece)=='k'&&Math.abs(orgX - dstX)==2) {
+                int f=0;
+                if (p==0) {
+                    f=7;
+                } else {
+                    f=0;
+                }
+                if (dstX==2) { // izq enroque
+                    board[f][3]=board[f][0];
+                    board[f][0]=' ';
+                } else if (dstX==6) { // der enroque
+                    board[f][5]=board[f][7];
+                    board[f][7]=' ';
+                }
+            }
+            
             board[dstY][dstX]=board[orgY][orgX];
             board[orgY][orgX]=' ';
             validMovement[1]=true;
