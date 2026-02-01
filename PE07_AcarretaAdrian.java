@@ -188,9 +188,9 @@ public class PE07_AcarretaAdrian {
                 Boolean quit=readPosition(p,s, "\nPlease enter the position of the piece you wanna move: ",movement,'o',validMovement,readableMoves);
                 if (quit) {
                     if (p==0) {
-                        gamesWon[1]=+1;
+                        gamesWon[1]+=1;
                     } else {
-                        gamesWon[0]=+1;
+                        gamesWon[0]+=1;
                     }
                     return true;
                 }
@@ -229,6 +229,9 @@ public class PE07_AcarretaAdrian {
             case 'h':
                 horseMoves(p, movingBoard, movement);
                 break;
+            case 'b':
+                bishopMoves(p, movingBoard, movement);
+                break;
             default:
                 break;
         }
@@ -255,7 +258,7 @@ public class PE07_AcarretaAdrian {
                 validHorseMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'b': // BISHOPS
-                
+                validBishopMove(p,board, movement, posXorg, posYorg, posXdest, posYdest,validMovement,deadPieces);
                 break;
             case 'k': // KINGS
                 
@@ -290,10 +293,10 @@ public class PE07_AcarretaAdrian {
 
             if((dstY==orgY+directions[i][0])&&(dstX==orgX+directions[i][1])) {
                 if(destField==' ') {
-                    possibleMoves=+1;
+                    possibleMoves+=1;
                     movePiece(board, orgX, orgY, dstX, dstY, validMovement);
                 } else {
-                    possibleMoves=+1;
+                    possibleMoves+=1;
                     eatPiece(p, destField, orgX, orgY, dstX, dstY, board, validMovement, deadPieces);
                 }
             }
@@ -302,6 +305,58 @@ public class PE07_AcarretaAdrian {
             System.out.println(RED+"(!) You cannot move there."+RESET);
         }
     }
+
+    public void validBishopMove(int p,char[][]board,int[]movement,int orgX,int orgY,int dstX,int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
+
+        char destField = board[dstY][dstX];
+
+        int[][] directions = {
+            {1, 1},
+            {-1, -1},
+            {-1, 1},
+            {1, -1}
+        };
+
+        int possibleMoves = 0;
+
+        for (int i = 0; i < directions.length; i++) {
+
+            int stepX = directions[i][0];
+            int stepY = directions[i][1];
+
+            int x = orgX + stepX;
+            int y = orgY + stepY;
+
+            boolean stop = false;
+
+            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
+
+                if (board[y][x] != ' ') { // si hay pieza bloquear
+
+                    if (x == dstX && y == dstY) { // si es el destino
+                        possibleMoves += 1;
+                        eatPiece(p, destField, orgX, orgY, dstX, dstY, board, validMovement, deadPieces);
+                    }
+
+                    stop = true; // para si hay una pieza
+                } else {
+                    if (x == dstX && y == dstY) { // si es el destino y esta vacio
+                        possibleMoves += 1;
+                        movePiece(board, orgX, orgY, dstX, dstY, validMovement);
+                        stop = true;
+                    }
+                }
+
+                x += stepX;
+                y += stepY;
+            }
+        }
+
+        if (possibleMoves == 0) {
+            System.out.println(RED + "(!) You cannot move there." + RESET);
+        }
+    }
+
 
     public void validTowerMove(int p,char[][]board,int[]movement,int orgX,int orgY, int dstX, int dstY,Boolean[]validMovement,ArrayList<Character>deadPieces) {
 
@@ -440,6 +495,51 @@ public class PE07_AcarretaAdrian {
         }
     }
 
+    public void bishopMoves(int p, char[][] mBoard, int[] movement) {
+
+        int orgX = movement[0];
+        int orgY = movement[1];
+
+        int[][] directions = {
+            {1, 1},
+            {-1, -1},
+            {-1, 1},
+            {1, -1}
+        };
+
+        for (int i = 0; i < directions.length; i++) {
+
+            int stepX = directions[i][0];
+            int stepY = directions[i][1];
+
+            int x = orgX + stepX;
+            int y = orgY + stepY;
+
+            boolean stop = false;
+
+            while (x >= 0 && x < 8 && y >= 0 && y < 8 && !stop) {
+
+                char field = mBoard[y][x];
+
+                if (field == ' ') {
+                    markField(mBoard,y,x);
+                } else {
+
+                    if (
+                        (p == 0 && Character.isLowerCase(field)) ||
+                        (p == 1 && Character.isUpperCase(field))
+                    ) {
+                        markField(mBoard,y,x);
+                    }
+
+                    stop = true;
+                }
+
+                x += stepX;
+                y += stepY;
+            }
+        }
+    }
     public void towerMoves(int p, char[][] mBoard, int[] movement) {
 
         int orgX = movement[0];
