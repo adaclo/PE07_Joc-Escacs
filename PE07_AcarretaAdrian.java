@@ -215,6 +215,57 @@ public class PE07_AcarretaAdrian {
         return false;
     }
 
+    public boolean isKingInCheck(int p, char[][] board) {
+
+        char[][] attackBoard = new char[8][8];
+        copyBoard(board, attackBoard);
+
+        for (int f = 0; f < 8; f++) {
+            for (int c = 0; c < 8; c++) {
+
+                if (p == 0 && Character.isLowerCase(board[f][c])) { // si le toca al blanco
+                    int[] movement = {c, f};
+                    possibleMoves(1, attackBoard, movement);
+                }
+
+                if (p == 1 && Character.isUpperCase(board[f][c])) { // si le toca al rojo
+                    int[] movement = {c, f};
+                    possibleMoves(0, attackBoard, movement);
+                }
+            }
+        }
+
+        // Localizar el rey del jugador p y comprobar si está atacado
+        char king = ' ';
+
+        if (p==0) {
+            king='K';
+        } else {
+            king='k';
+        }
+
+        for (int f = 0; f < 8; f++) {
+            for (int c = 0; c < 8; c++) {
+                if (board[f][c] == king&&attackBoard[f][c] == '*') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isMoveLegal(int p, char[][] board, int orgX, int orgY, int dstX, int dstY) {
+
+        char[][] testBoard = new char[8][8];
+        copyBoard(board, testBoard);
+
+        testBoard[dstY][dstX] = testBoard[orgY][orgX]; // simula el movimiento sin ejecutarlo
+        testBoard[orgY][orgX] = ' ';
+
+        return !isKingInCheck(p, testBoard); // comprueba si sigo en jaque despues del movimiento
+    }
+
     public void possibleMoves(int p,char[][]movingBoard,int[]movement) {
         int orgX=movement[0];
         int orgY=movement[1];
@@ -241,6 +292,7 @@ public class PE07_AcarretaAdrian {
             default:
                 break;
         }
+        //showBoard(movingBoard);
     }
 
     public void validDestination(int p,char[][]board,char[][]mBoard,Boolean[]validMovement,int[]movement,ArrayList<Character>deadPieces) {
@@ -257,9 +309,9 @@ public class PE07_AcarretaAdrian {
             for (int c=0;c<board[0].length;c++) {
                 if (mBoard[f][c]=='*'&&f==dstY&&c==dstX) {
                     if(destField!=' ') {
-                        eatPiece(p, destField, orgX, orgY, dstX, dstY, board, validMovement, deadPieces);
+                        eatPiece(p, destField, orgX, orgY, dstX, dstY, board, mBoard, validMovement, deadPieces);
                     } else {
-                        movePiece(board, orgX, orgY, dstX, dstY, validMovement);
+                        movePiece(p, board, mBoard, orgX, orgY, dstX, dstY, validMovement);
                     }
                 }
             }
@@ -412,10 +464,14 @@ public class PE07_AcarretaAdrian {
         board[i][j]='*';    
     }
 
-    public void movePiece(char[][]board,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement) {
-        board[dstY][dstX]=board[orgY][orgX];
-        board[orgY][orgX]=' ';
-        validMovement[1]=true;
+    public void movePiece(int p,char[][]board,char[][]movingBoard,int orgX,int orgY,int dstX,int dstY, Boolean[]validMovement) {
+        if (isMoveLegal(p, board, orgX, orgY, dstX, dstY)) {
+            board[dstY][dstX]=board[orgY][orgX];
+            board[orgY][orgX]=' ';
+            validMovement[1]=true;
+        } else {
+            System.out.println(RED+"(!) Your king is in check!"+RESET);
+        }
     }
 
     public boolean pathIsClear(int orgX, int orgY, int dstX, int dstY, char[][] board) {
@@ -439,12 +495,16 @@ public class PE07_AcarretaAdrian {
     }
 
 
-    public void eatPiece(int p, char destField, int orgX, int orgY, int dstX, int dstY, char[][]board, Boolean[]validMovement,ArrayList<Character>deadPieces) {
+    public void eatPiece(int p, char destField, int orgX, int orgY, int dstX, int dstY, char[][]board,char[][]movingBoard, Boolean[]validMovement,ArrayList<Character>deadPieces) {
         if ((p==0 && Character.isLowerCase(destField))||(p==1 && Character.isUpperCase(destField))) {
-            deadPieces.add(destField);
-            board[dstY][dstX]=board[orgY][orgX];
-            board[orgY][orgX]=' ';
-            validMovement[1]=true;
+            if (isMoveLegal(p, board, orgX, orgY, dstX, dstY)) {
+                deadPieces.add(destField);
+                board[dstY][dstX]=board[orgY][orgX];
+                board[orgY][orgX]=' ';
+                validMovement[1]=true;
+            } else {
+                System.out.println(RED+"(!) Your king is in check!"+RESET);
+            }
         } else {
             System.out.println(RED+"(!) You cannot eat your pieces.");
         }
