@@ -1,4 +1,4 @@
-package Activitats.PE07;
+package Activitats.PE07.src;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
